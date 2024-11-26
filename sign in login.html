@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign-Up and Login</title>
+</head>
+<body>
+  <h1>Sign-Up</h1>
+  <form id="signupForm">
+    <input type="text" id="signupUsername" placeholder="Username" required />
+    <input type="email" id="signupEmail" placeholder="Email" required />
+    <input type="text" id="signupSecurityCode" placeholder="6-Digit Security Code" required />
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <h1>Login</h1>
+  <form id="loginForm">
+    <input type="email" id="loginEmail" placeholder="Email" required />
+    <input type="text" id="loginSecurityCode" placeholder="6-Digit Security Code" required />
+    <button type="submit">Login</button>
+  </form>
+
+  <script>
+    // Sign-Up
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('signupUsername').value;
+      const email = document.getElementById('signupEmail').value;
+      const securityCode = document.getElementById('signupSecurityCode').value;
+
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, securityCode }),
+        });
+
+        const result = await response.json();
+        alert(result.message);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error occurred during sign-up.');
+      }
+    });
+
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const securityCode = document.getElementById('loginSecurityCode').value;
+
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, securityCode }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          alert('Login successful! Token: ' + result.token);
+        } else {
+          alert(result.message);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error occurred during login.');
+      }
+    });
+  </script>
+</body>
+</html>

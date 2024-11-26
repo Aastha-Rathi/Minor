@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Barcode Scanner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+</head>
+<body>
+    <h1>Scan Barcode</h1>
+    <div id="interactive" class="viewport"></div>
+    <form id="barcode-form">
+        <label>Product Name:</label>
+        <input type="text" id="productName" required><br>
+        <label>Manufacturing Date:</label>
+        <input type="date" id="manufacturingDate" required><br>
+        <label>Expiration Date:</label>
+        <input type="date" id="expirationDate" required><br>
+        <input type="hidden" id="barcode">
+        <button type="submit">Save Product</button>
+    </form>
+
+    <script>
+        // Initialize QuaggaJS for barcode scanning
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#interactive') // Bind to the viewport
+            },
+            decoder: {
+                readers: ["ean_reader"] // "ean_reader" for EAN-13 barcodes (adjust if needed)
+            }
+        }, function (err) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            Quagga.start();
+        });
+
+        // Capture the barcode data
+        Quagga.onDetected(function (data) {
+            document.getElementById('barcode').value = data.codeResult.code;
+            Quagga.stop(); // Stop scanning after detection
+        });
+
+        // Send data to server on form submission
+        document.getElementById('barcode-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const productName = document.getElementById('productName').value;
+            const manufacturingDate = document.getElementById('manufacturingDate').value;
+            const expirationDate = document.getElementById('expirationDate').value;
+            const barcode = document.getElementById('barcode').value;
+
+            // Send POST request to server
+            const response = await fetch('/api/scan-barcode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ barcode, productName, manufacturingDate, expirationDate }),
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+    </script>
+</body>
+</html>
